@@ -1,0 +1,25 @@
+{
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "34.59.64.121",
+            "port": 3306,
+            "sshOptions": {
+                "port": 3306,
+                "host": "34.59.64.121",
+                "username": "root"
+            },
+            "driver": "MySQL",
+            "name": "myconn",
+            "database": "users_db",
+            "username": "root",
+            "connectionTimeout": 50000,
+            "password": "my-secret-pw"
+        }
+    ]
+}
