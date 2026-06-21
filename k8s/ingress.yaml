@@ -5,8 +5,7 @@ metadata:
   namespace: k8s-namespace
 spec:
   rules:
-  - host: k8sdevops.jasmeetkaur.com
-    http:
+  - http:
       paths:
       - path: /
         pathType: Prefix
