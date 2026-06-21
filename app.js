@@ -13,6 +13,9 @@ const db = mysql.createPool({
   database: 'users_db',
  });
 
+app.get('/health', (req, res) => {
+  res.status(200).send("OK");
+});
 // API endpoint
 app.get('/users', (req, res) => {
   console.log('Fetching users from the database...');
@@ -23,6 +26,8 @@ app.get('/users', (req, res) => {
     res.json(results);
   });
 });
+
+
 
 app.listen(port, () => {
   console.log(`🚀 Server running at http://localhost:${port}`);
