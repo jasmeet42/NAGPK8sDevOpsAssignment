@@ -9,11 +9,18 @@ spec:
     kind: Deployment
     name: node-api
   minReplicas: 4
-  maxReplicas: 10
+  maxReplicas: 6
   metrics:
   - type: Resource
     resource:
       name: cpu
       target:
         type: Utilization
-        averageUtilization: 70
+        averageUtilization: 50
+        
+  - type: Resource
+    resource:
+    name: memory
+    target:
+      type: Utilization
+      averageUtilization: 70
