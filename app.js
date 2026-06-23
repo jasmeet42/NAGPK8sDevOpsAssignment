@@ -2,16 +2,17 @@ const express = require("express");
 const mysql = require("mysql2");
 
 const app = express();
-const port = 8080;
+const port = process.env.APP_PORT;
 
 // DB connection
-// Use a pool (safer for concurrent requests). Credentials come from env vars when available.
+// Use a pool (safer for concurrent requests).
+// DB credentials and configuration are injected via ConfigMap and Secret.
 const db = mysql.createPool({
-  host: '34.59.64.121' ,
-  user: 'root',
-  password: 'my-secret-pw',
-  database: 'users_db',
- });
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+});
 
 app.get('/health', (req, res) => {
   res.status(200).send("OK");
@@ -30,5 +31,5 @@ app.get('/users', (req, res) => {
 
 
 app.listen(port, () => {
-  console.log(`🚀 Server running at http://localhost:${port}`);
+  console.log(`Server running at http://localhost:${port}`);
 });

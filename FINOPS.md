@@ -68,13 +68,50 @@ Cluster autoscaling is enabled to automatically adjust the number of nodes based
 - Removes underutilized nodes when demand decreases  
 
 ![Enabling node autoscaling and Google Cloud Platform node pool configuration showing autoscaling enabled with minNodeCount set to 1 and maxNodeCount set to 3, demonstrating active cluster auto-scaling setup](images/enabled-node-autoscaling.png)
+
 ---
+
+### 4. Persistent Storage Optimization (PVC & StorageClass)
+- Right-sized storage allocation:
+  The PVC is configured with **1Gi storage**, which is sufficient for the current workload (very minimal dataset with only a few records). This avoids over-provisioning and reduces unnecessary storage costs.
+
+- Dynamic provisioning:
+  StorageClass enables on-demand creation of PersistentVolumes, ensuring that storage is only allocated when required.
+
+- Cost-aware storage usage:
+  A minimal storage size is chosen instead of default larger sizes (e.g., 10Gi), demonstrating efficient resource utilization.
+
+- Efficient persistence strategy:
+  MySQL uses persistent storage to retain data across pod restarts, avoiding repeated initialization overhead and improving operational efficiency.
+
+- Observation:
+  Current database usage is extremely low, indicating that 1Gi allocation is appropriate and cost-optimized for this workload.
+
+These practices ensure optimal storage utilization while minimizing cloud costs.
+
+---
+
+### 5. Namespace-based Resource Governance
+All resources are deployed within a dedicated namespace:
+k8s-namespace
+
+This enables:
+Logical isolation of application components
+Monitoring resource usage:
+kubectl top pods -n k8s-namespace
+
+Supports future implementation of:
+ResourceQuota
+LimitRange
+
+This improves cost visibility and enforces resource governance.
 
 ## Cost Optimization Impact
 
 - Maintains required **baseline availability (4 pods)**
 - Scales pods **only when needed (HPA)**
 - Scales infrastructure **only when required (Cluster Autoscaler)**
+- Optimizes storage and runtime configuration through PVC sizing
 - Avoids over-provisioning of both pods and nodes
 - Improves overall resource utilization
 - Reduces cost during idle and low-traffic periods

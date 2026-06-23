@@ -89,5 +89,5 @@ Notes:
 
 ## FinOps Considerations
 
-Brief summary: the cluster shows underutilized API pods (very low CPU and small memory use). The repository includes HPA and Cluster Autoscaler configurations to reduce cost and improve utilization. For the full metrics, analysis, optimization strategies, images, and detailed recommendations, see [FINOPS.md](FINOPS.md).
+Brief summary: the cluster shows underutilized API pods (very low CPU and small memory use). The deployment uses HPA and Cluster Autoscaler configurations to reduce cost and improve utilization. For the full metrics, analysis, optimization strategies, images, and detailed recommendations, see [FINOPS.md](FINOPS.md).
 
