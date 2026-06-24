@@ -13,7 +13,7 @@ This repository contains Kubernetes manifests to deploy a small Node.js API back
 ## Useful links
 
 - GitHub repo: https://github.com/jasmeet42/NAGPK8sDevOpsAssignment.git
-- Docker image: docker.io/jasmeetkaur42/k8sdevops-app:v2
+- Docker image: docker.io/jasmeetkaur42/k8sdevops-app:v6
 - Ingress endpoint: http://8.232.9.138/users
 
 ## Architecture Overview

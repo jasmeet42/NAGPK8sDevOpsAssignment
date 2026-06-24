@@ -667,7 +667,7 @@ kubectl get secret db-secret -n k8s-namespace -o yaml
 | Data persistence | ✅ | PVC mounted to MySQL |
 | Resource limits defined | ✅ | CPU: 50m/200m, Memory: 64Mi/128Mi |
 | 3 cost optimizations | ✅ | HPA, Cluster Autoscaling, Storage Optimization |
-| Docker image on Hub | ✅ | jasmeetkaur42/k8sdevops-app:v2 |
+| Docker image on Hub | ✅ | jasmeetkaur42/k8sdevops-app:v6 |
 | GitHub repository | ✅ | https://github.com/jasmeet42/NAGPK8sDevOpsAssignment.git |
 | Connection pooling | ✅ | mysql2 pool configuration |
 | Ingress for external access | ✅ | Ingress controller routing |
