@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: node-api
-        image: jasmeetkaur42/k8sdevops-app:v2  
+        image: jasmeetkaur42/k8sdevops-app:v3  
         ports:
         - containerPort: 8080
 

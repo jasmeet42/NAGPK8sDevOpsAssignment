@@ -1,6 +1,23 @@
 # FinOps Considerations
 
-## Current Observed State
+## 1. Define CPU and memory requests and limits for the Service/API tier
+
+Defined resource requests and limits for the `node-api` container in `k8s/api-deployment.yaml` to ensure the API tier has a guaranteed baseline of compute and memory while also preventing runaway usage.
+
+```yaml
+requests:
+  - cpu: 100m
+    memory: 128Mi
+limits:
+  - cpu: 200m
+    memory: 256Mi
+```
+
+---
+
+## 2. Implement resource optimization using observed metrics
+
+Current Observed State using actual metrics (`kubectl top`)
 
 Node API Pods:
 - CPU: approx. 2m per pod
@@ -10,21 +27,29 @@ MySQL Pod:
 - CPU: approx. 10m  
 - Memory: approx. 432Mi  
 
-
-![Current state](images/current_state.png)
-
----
-
-## Analysis
-
-- Application runs with **4 replicas as required**
+Application runs with **4 replicas as required**
 - Observed CPU usage (approx. 2m) is extremely low (~1–2%)
 - Indicates underutilization of compute resources
 - Resources are not efficiently utilized during low traffic
 
+
+![Current state](images/current_state.png)
+
+Resource requests and limits were optimized:
+
+```yaml
+resources:
+  requests:
+    cpu: "50m"
+    memory: "64Mi"
+  limits:
+    cpu: "200m"
+    memory: "128Mi"
+```
+
 ---
 
-## Identified Problems
+## 3. Identify at least three opportunities to optimize Kubernetes costs
 
 - Fixed baseline replicas (minimum 4 required)
 - Low CPU utilization
@@ -34,33 +59,17 @@ MySQL Pod:
 
 ---
 
-## Optimization Strategies Implemented
-
-#### 1. Resource Right-Sizing (Based on Observed Metrics)
-
-Using actual metrics (`kubectl top`), resource requests and limits were optimized:
-
-resources:
-  requests:
-    cpu: "50m"
-    memory: "64Mi"
-  limits:
-    cpu: "200m"
-    memory: "128Mi"
-
----
-
-#### 2. Horizontal Pod Autoscaler (HPA)
-
+#### 1. Horizontal Pod Autoscaler (HPA) 
 HPA is configured to scale based on CPU utilization:
 
 - Minimum Replicas: 4 (as per requirement)
 - Maximum Replicas: 6
 - Target CPU Utilization: 50%
+- Target Memory Utilization: 70%
 
 ---
 
-#### 3. Cluster Autoscaler
+#### 2. Cluster Autoscaler
 
 Cluster autoscaling is enabled to automatically adjust the number of nodes based on workload demand.
 
@@ -71,7 +80,7 @@ Cluster autoscaling is enabled to automatically adjust the number of nodes based
 
 ---
 
-### 4. Persistent Storage Optimization (PVC & StorageClass)
+#### 3. Persistent Storage Optimization (PVC & StorageClass)
 - Right-sized storage allocation:
   The PVC is configured with **1Gi storage**, which is sufficient for the current workload (very minimal dataset with only a few records). This avoids over-provisioning and reduces unnecessary storage costs.
 
@@ -91,20 +100,93 @@ These practices ensure optimal storage utilization while minimizing cloud costs.
 
 ---
 
-### 5. Namespace-based Resource Governance
-All resources are deployed within a dedicated namespace:
-k8s-namespace
+#### 4. Label Selectors & Service Routing
+
+Strategic use of labels enables:
+- Precise pod selection and identification for cost tracking
+- Efficient traffic routing through service selectors
+- Organized workload management
+
+```yaml
+labels:
+  app: node-api
+selector:
+  matchLabels:
+    app: node-api
+```
+
+**FinOps Impact:**
+- Enables granular cost allocation per application component
+- Improves visibility into which resources are consumed by which services
+- Supports future chargeback and cost attribution models
+
+---
+
+## Indirect FinOps Cost Optimizations
+
+While not direct cost optimization mechanisms, the following operational practices support and enhance FinOps efficiency:
+
+### Namespace-based Resource Governance
+
+All resources are deployed within a dedicated namespace: `k8s-namespace`
 
 This enables:
-Logical isolation of application components
-Monitoring resource usage:
-kubectl top pods -n k8s-namespace
+- Logical isolation of application components
+- Monitoring resource usage:
+  ```bash
+  kubectl top pods -n k8s-namespace
+  ```
 
 Supports future implementation of:
-ResourceQuota
-LimitRange
+- `ResourceQuota`
+- `LimitRange`
 
-This improves cost visibility and enforces resource governance.
+This foundation improves cost visibility and enforces resource governance.
+
+---
+
+### Health Checks (Readiness & Liveness Probes)
+
+Health checks are configured to ensure only healthy pods receive traffic and failed pods are automatically restarted:
+
+```yaml
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 5
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8080
+  initialDelaySeconds: 15
+  periodSeconds: 10
+```
+
+**Cost Impact:**
+- Prevents traffic routing to unhealthy pods, avoiding wasted compute resources
+- Automatic restart of failing pods reduces manual intervention overhead
+- Ensures efficient resource utilization by removing crashed containers quickly
+
+---
+
+### Rolling Updates Strategy
+
+The deployment uses `RollingUpdate` strategy to ensure zero-downtime deployments:
+
+```yaml
+strategy:
+  type: RollingUpdate
+```
+
+**Cost Impact:**
+- Eliminates resource spikes caused by sudden pod termination and startup
+- Prevents service disruption, avoiding retry overhead and wasted requests
+- Maintains predictable resource consumption patterns during deployments
+
+---
 
 ## Cost Optimization Impact
 
@@ -128,32 +210,35 @@ This improves cost visibility and enforces resource governance.
 
 ---
 
-## Additional Observations
-
-- API pods are significantly underutilized  
-- Memory usage is stable (~30Mi per pod)  
-- MySQL memory usage (~432Mi) is relatively higher  
-- Cluster autoscaler prevents unnecessary node allocation  
-
----
-
-## Future Optimization Opportunities
-
-1. **Database optimization**
-  - Tune MySQL configuration for lower memory footprint
-
-2. **Further cost optimization**
-  - Use smaller machine types (for example, e2-small instead of e2-medium)
-  - Optimize node pool configuration
 
 ---
 
 ## Conclusion
 
-The system demonstrates a **complete FinOps-aware architecture**:
+The system demonstrates a **complete FinOps-aware architecture** organized into two categories:
 
-- HPA ensures efficient pod-level scaling  
-- Cluster Autoscaler ensures efficient infrastructure scaling  
-- Cost is optimized at both application and cluster level  
+### Direct FinOps Optimizations
 
-This results in a scalable, resilient, and cost-efficient Kubernetes deployment.
+1. **CPU and Memory Requests and Limits**: Defined granular resource requests (`cpu: 50m`, `memory: 64Mi`) and limits (`cpu: 200m`, `memory: 128Mi`) for the API tier to ensure predictable scheduling and prevent resource contention.
+
+2. **Resource Optimization Using Observed Metrics**: Analyzed actual cluster metrics (`kubectl top`) to right-size requests and limits, eliminating over-provisioning based on real workload patterns.
+
+3. **Horizontal Pod Autoscaler (HPA)**: Scales API pods dynamically (4-6 replicas) based on CPU utilization at 50% threshold and memory utilization at 70%.
+
+4. **Cluster Autoscaler**: Automatically adjusts node count based on workload demand, adding nodes when needed and removing underutilized ones.
+
+5. **Persistent Storage Optimization**: Right-sized PVC to 1Gi for efficient storage utilization and cost reduction.
+
+6. **Label Selectors & Service Routing**: Enables precise cost tracking, workload identification, and efficient traffic routing for better resource attribution.
+
+### Indirect FinOps Optimizations
+
+7. **Namespace-based Resource Governance**: Provides organizational foundation for cost visibility and enables future ResourceQuota and LimitRange implementations.
+
+8. **Health Checks (Readiness & Liveness Probes)**: Ensures only healthy pods receive traffic, preventing wasted resources on unhealthy containers.
+
+9. **Rolling Updates Strategy**: Zero-downtime deployments eliminate resource spikes and maintain predictable consumption patterns during updates.
+
+---
+
+This results in a scalable, resilient, and cost-efficient Kubernetes deployment that maintains baseline availability while optimizing costs across pod, infrastructure, storage, and operational layers.

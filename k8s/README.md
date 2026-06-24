@@ -13,7 +13,7 @@ This repository contains Kubernetes manifests to deploy a small Node.js API back
 ## Useful links
 
 - GitHub repo: https://github.com/jasmeet42/NAGPK8sDevOpsAssignment.git
-- Docker image: docker.io/jasmeetkaur42/k8sdevops-app:v3
+- Docker image: docker.io/jasmeetkaur42/k8sdevops-app:v2
 - Ingress endpoint: http://8.232.9.138/users
 
 ## Architecture Overview
@@ -23,20 +23,11 @@ This repository contains Kubernetes manifests to deploy a small Node.js API back
 - API is exposed using **Ingress**  
 
 ### Kubernetes Best Practices Used:
-- **ConfigMap** – Externalized configuration management  
-- **Secrets** – Secure credential management  
-- **Persistent Volume Claim (PVC)** – Persistent data storage  
-- **Horizontal Pod Autoscaler (HPA)** – Auto-scaling based on CPU and memory metrics  
-- **Rolling Updates** – Zero-downtime deployments  
-- **Resource Requests & Limits** – CPU and memory management for efficient scheduling  
-- **Health Checks** – Readiness and Liveness Probes for reliability  
-- **High Availability** – Multi-replica deployments  
-- **Label Selectors** – Organized pod management and service routing  
-- **Environment Injection** – Configuration via ConfigMap and Secrets  
-- **Volume Mounts** – Stateful data persistence for databases  
-- **Ingress Controller** – External HTTP traffic routing and load balancing  
-- **Service Abstraction** – ClusterIP services for internal communication  
-- **Namespace Isolation** – Resource organization and multi-tenancy  
+- ConfigMap  
+- Secrets  
+- Persistent Volume Claim (PVC)  
+- Horizontal Pod Autoscaler (HPA)  
+- Rolling Updates  
 
 ---
 
@@ -45,8 +36,7 @@ This repository contains Kubernetes manifests to deploy a small Node.js API back
 ### Service API Tier
 - Exposes REST API  
 - Fetches records from MySQL  
-- Uses **ConfigMap for DB configuration**  
-- Uses **Secrets for DB password**  
+- Uses **ConfigMap for DB configuration** and **Secret for DB password** via environment variables  
 - Supports **Rolling Updates**  
 - Exposed externally via **Ingress**  
 - Implements **Horizontal Pod Autoscaler (HPA)**  
@@ -93,10 +83,11 @@ kubectl apply -f k8s/hpa.yaml
 
 Notes:
 - The manifests in this repository live in the `k8s/` directory. Adjust paths if you run commands from inside that directory.
+- The API deployment injects database configuration from `app-config` and the DB password from `db-secret` into the application container.
 
 ---
 
 ## FinOps Considerations
 
-Brief summary: the cluster shows underutilized API pods (very low CPU and small memory use). The deployment uses HPA and Cluster Autoscaler configurations to reduce cost and improve utilization. For the full metrics, analysis, optimization strategies, images, and detailed recommendations, see [FINOPS.md](FINOPS.md).
+Brief summary: the cluster shows underutilized API pods (very low CPU and small memory use). The deployment also uses `ConfigMap` and `Secret` for database configuration and credentials, plus HPA and Cluster Autoscaler configurations to reduce cost and improve utilization. For the full metrics, analysis, optimization strategies, images, and detailed recommendations, see [FINOPS.md](FINOPS.md).
 

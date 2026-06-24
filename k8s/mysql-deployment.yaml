@@ -5,6 +5,8 @@ metadata:
   namespace: k8s-namespace
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: mysql
@@ -16,15 +18,41 @@ spec:
       containers:
       - name: mysql
         image: mysql:8
+        ports:
+          - containerPort: 3306
         env:
         - name: MYSQL_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
               name: db-secret
               key: DB_PASSWORD
+        - name: MYSQL_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DB_NAME
+              
+        - name: MYSQL_ROOT_HOST   
+          value: "%"
+            
+        readinessProbe:
+          tcpSocket:
+            port: 3306
+          initialDelaySeconds: 10
+          periodSeconds: 5
+
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "512Mi"
+          limits:
+            cpu: "500m"
+            memory: "1Gi"
+
         volumeMounts:
-        - mountPath: /var/lib/mysql
-          name: mysql-storage
+        - name: mysql-storage
+          mountPath: /var/lib/mysql
+
       volumes:
       - name: mysql-storage
         persistentVolumeClaim:

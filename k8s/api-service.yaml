@@ -4,7 +4,7 @@ metadata:
   name: node-service
   namespace: k8s-namespace
 spec:
-  type: ClusterIP   # ✅ explicit
+  type: ClusterIP   
   selector:
     app: node-api
   ports:
