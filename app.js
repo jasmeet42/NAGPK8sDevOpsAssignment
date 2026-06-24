@@ -19,7 +19,7 @@ app.get('/health', (req, res) => {
 });
 // API endpoint
 app.get('/users', (req, res) => {
-  console.log('Fetching users from the database...');
+  console.log('Getting users from the database...');
   // For demonstration, we return a static list of users. In production, you'd query the database.
   
   db.query('SELECT * FROM users', (err, results) => {
