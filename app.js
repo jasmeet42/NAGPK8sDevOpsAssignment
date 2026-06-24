@@ -31,5 +31,5 @@ app.get('/users', (req, res) => {
 
 
 app.listen(port, () => {
-  console.log(`Server running at http://8.232.9.138`);
+  console.log(`Running at http://8.232.9.138`);
 });
